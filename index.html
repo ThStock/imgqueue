@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>ImgQueue</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="ImgQueue">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+</head>
+<body>
+<style>
+body {
+  font-family: monospace;
+}
+input[type="file"] {
+  display: none;
+}
+.custom-file-upload {
+    display: inline-block;
+    padding: 6px 12px;
+    width: 80%;
+    height: 4rem;
+    cursor: pointer;
+    vertical-align: center;
+    text-align: center;
+}
+</style>
+<script>
+  var loc = window.location, new_uri;
+  if (loc.protocol === "https:") {
+    new_uri = "wss:";
+  } else {
+    new_uri = "ws:";
+  }
+  new_uri += "//" + loc.host;
+  var ws = new WebSocket(new_uri + "/ws/events/");
+  ws.onmessage = function (event) {
+    location.reload();
+  }
+</script>
+
+<form id="form1" enctype="multipart/form-data" method="POST" action="add/">
+  <label for="fileToUpload" class="custom-file-upload">
+    <img src="" id="img1" width="80%"/>
+  </label>
+  <input onchange="javascript:this.form.submit();" type="file" name="fileToUpload" id="fileToUpload" accept="image/*" />
+</form>
+
+<input  class="custom-file-upload" type="button" value="Refresh Page" onClick="window.location.reload()">
+<script>
+(function() {
+document.getElementById("img1").src = "bert.jpg?c=" + new Date().getTime();
+})();
+</script>
+</body>
+</html>
