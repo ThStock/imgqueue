@@ -27,6 +27,51 @@ input[type="file"] {
 }
 </style>
 <script>
+function ResizeImage(elementId, formId, outputId) {
+    var filesToUpload = document.getElementById(elementId).files;
+    var file = filesToUpload[0];
+
+    var img = document.createElement("img");
+    var reader = new FileReader();
+    reader.onloadend = function(e) {
+            img.src = e.target.result;
+setTimeout(function() {
+            var canvas = document.createElement("canvas");
+            var ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0);
+
+            var MAX_WIDTH = 1000;
+            var MAX_HEIGHT = 1000;
+            var width = img.width;
+            var height = img.height;
+
+            if (width > height) {
+                if (width > MAX_WIDTH) {
+                    height *= MAX_WIDTH / width;
+                    width = MAX_WIDTH;
+                }
+            } else {
+                if (height > MAX_HEIGHT) {
+                    width *= MAX_HEIGHT / height;
+                    height = MAX_HEIGHT;
+                }
+            }
+            canvas.width = width;
+            canvas.height = height;
+            var ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, width, height);
+
+            var dataurl = canvas.toDataURL("image/png");
+            document.getElementById(outputId).value = dataurl;
+            document.getElementById(formId).submit();
+
+
+}, 100);
+        }
+    reader.readAsDataURL(file);
+}
+
+
   var loc = window.location, new_uri;
   if (loc.protocol === "https:") {
     new_uri = "wss:";
@@ -38,19 +83,44 @@ input[type="file"] {
   ws.onmessage = function (event) {
     location.reload();
   }
+  ws.onclose = function (event) {
+    ws = new WebSocket(new_uri + "/ws/events/");
+  }
 </script>
-
 <form id="form1" enctype="multipart/form-data" method="POST" action="add/">
-  <label for="fileToUpload" class="custom-file-upload">
+  <input type="hidden" name="fileToUpload" id="output1">
+  <input type="hidden" name="filename" value="bert1">
+  <label for="fileToUpload1" class="custom-file-upload">
     <img src="" id="img1" width="80%"/>
   </label>
-  <input onchange="javascript:this.form.submit();" type="file" name="fileToUpload" id="fileToUpload" accept="image/*" />
 </form>
+<input onchange="javascript:ResizeImage('fileToUpload1', 'form1', 'output1');" type="file" id="fileToUpload1" accept="image/*" />
 
-<input  class="custom-file-upload" type="button" value="Refresh Page" onClick="window.location.reload()">
+<form id="form2" enctype="multipart/form-data" method="POST" action="add/">
+  <input type="hidden" name="fileToUpload" id="output2">
+  <input type="hidden" name="filename" value="bert2">
+  <label for="fileToUpload2" class="custom-file-upload">
+    <img src="" id="img2" width="80%"/>
+  </label>
+</form>
+<input onchange="javascript:ResizeImage('fileToUpload2', 'form2', 'output2');" type="file" id="fileToUpload2" accept="image/*" />
+
+<form id="form3" enctype="multipart/form-data" method="POST" action="add/">
+  <input type="hidden" name="fileToUpload" id="output3">
+  <input type="hidden" name="filename" value="bert3">
+  <label for="fileToUpload3" class="custom-file-upload">
+    <img src="" id="img3" width="80%"/>
+  </label>
+</form>
+<input onchange="javascript:ResizeImage('fileToUpload3', 'form3', 'output3');" type="file" id="fileToUpload3" accept="image/*" />
+
+<input class="custom-file-upload" type="button" value="Refresh Page" onClick="window.location.reload()">
+
 <script>
 (function() {
-document.getElementById("img1").src = "bert.jpg?c=" + new Date().getTime();
+document.getElementById("img1").src = "bert1.jpg?c=" + new Date().getTime();
+document.getElementById("img2").src = "bert2.jpg?c=" + new Date().getTime();
+document.getElementById("img3").src = "bert3.jpg?c=" + new Date().getTime();
 })();
 </script>
 </body>

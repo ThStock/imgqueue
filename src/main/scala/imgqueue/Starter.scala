@@ -1,7 +1,8 @@
 package imgqueue
 
-import java.io.File
+import java.io.{ByteArrayInputStream, File}
 import java.nio.file.{Files, StandardCopyOption}
+import java.util.Base64
 import javax.servlet.MultipartConfigElement
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
 import javax.websocket._
@@ -15,6 +16,7 @@ import org.eclipse.jetty.websocket.jsr356.server.ServerContainer
 import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer
 
 import scala.collection.JavaConverters
+import scala.io.Source
 
 object Starter extends App with LazyLogging {
   var wscontainer: ServerContainer = null
@@ -34,14 +36,16 @@ object Starter extends App with LazyLogging {
       baseRequest.setAttribute(Request.__MULTIPART_CONFIG_ELEMENT,
         new MultipartConfigElement(tmp.getAbsolutePath))
       if (request.getMethod == "POST") {
-        val part = request.getPart("fileToUpload")
-        val latest = path.toPath.resolveSibling("bert.jpg")
-        Files.copy(part.getInputStream, latest, StandardCopyOption.REPLACE_EXISTING)
+        val filename = Source.fromInputStream(request.getPart("filename").getInputStream).mkString
+        val base64 = Source.fromInputStream(request.getPart("fileToUpload").getInputStream).mkString.replaceFirst("^data:image/\\w+;base64,", "")
+        val image = Base64.getDecoder.decode(base64)
+        val latest = path.toPath.resolveSibling(filename + ".jpg")
+        Files.copy(new ByteArrayInputStream(image), latest, StandardCopyOption.REPLACE_EXISTING)
+        JavaConverters.asScalaSet(wscontainer.getOpenSessions).map(_.getAsyncRemote)
+          .foreach(in ⇒ {
+            in.sendText("reload " + filename)
+          })
       }
-      JavaConverters.asScalaSet(wscontainer.getOpenSessions).map(_.getAsyncRemote)
-        .foreach(in ⇒ {
-          in.sendText("reload")
-        })
       response.sendRedirect("/")
       baseRequest.setHandled(true)
     }
