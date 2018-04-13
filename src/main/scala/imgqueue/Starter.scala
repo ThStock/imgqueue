@@ -21,7 +21,6 @@ import scala.io.Source
 object Starter extends App with LazyLogging {
   var wscontainer: ServerContainer = null
   val server = new Server(9988)
-  server
   val resource_handler = new ResourceHandler
   resource_handler.setDirectoriesListed(true)
   resource_handler.setWelcomeFiles(Array[String]("index.html"))
@@ -43,7 +42,7 @@ object Starter extends App with LazyLogging {
         Files.copy(new ByteArrayInputStream(image), latest, StandardCopyOption.REPLACE_EXISTING)
         JavaConverters.asScalaSet(wscontainer.getOpenSessions).map(_.getAsyncRemote)
           .foreach(in ⇒ {
-            in.sendText("reload " + filename)
+            in.sendText(filename)
           })
       }
       response.sendRedirect("/")
